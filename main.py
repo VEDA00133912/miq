@@ -8,16 +8,14 @@ from wrap import fw_wrap
 
 warnings.simplefilter("ignore")
 
+# デフォルトとカラーのみに変更したため削減
 BASE_IMAGES = {
     "default": Image.open("images/base.png"),
-    "gd": Image.open("images/base-gd.png"),
-    "rv": Image.open("images/base-gd-rv.png"),
-    "gd_w": Image.open("images/base-gd-w.png"),
-    "rv_w": Image.open("images/base-gd-w-rv.png")
+    "gd": Image.open("images/base-gd.png")
 }
 
 MPLUS_FONT = ImageFont.truetype("fonts/MPLUSRounded1c-Regular.ttf", size=16)
-BRAND = "!kumanomi!#9363"
+BRAND = "!kumanomi!#9363" # くまのみBOT用に変更
 
 def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, color=(0, 0, 0, 255), split_len=None, padding=4, disable_dot_wrap=False):
     ImageDraw.Draw(im)
@@ -52,10 +50,10 @@ def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, 
 
     return 0, dy, ofs[1] + adj_y + dy
 
-def createImage(name, id, content, icon, base_image, gd_image=None, reverse=False, white=False):
+def createImage(name, id, content, icon, base_image, gd_image=None):
     img = base_image.copy()
     icon = Image.open(io.BytesIO(requests.get(icon).content)).resize((720, 720), Image.LANCZOS).convert("L")
-    img.paste(ImageEnhance.Brightness(icon).enhance(0.7) if gd_image else icon, (570 if reverse else 0, 0))
+    img.paste(ImageEnhance.Brightness(icon).enhance(0.7) if gd_image else icon, (0, 0))
     img.paste(gd_image, (0, 0), gd_image)
 
     tx = ImageDraw.Draw(img)
@@ -65,7 +63,7 @@ def createImage(name, id, content, icon, base_image, gd_image=None, reverse=Fals
     id_y = name_y + tsize_name[1] + 4
     drawText(img, (890, id_y), id, size=18, color=(180, 180, 180, 255), split_len=45, disable_dot_wrap=True)
 
-    tx.text((1122 if not reverse else 6, 694), BRAND, font=MPLUS_FONT, fill=(120, 120, 120, 255))
+    tx.text((1122, 694), BRAND, font=MPLUS_FONT, fill=(120, 120, 120, 255))
 
     file = io.BytesIO()
     img.save(file, format="PNG", quality=95)
@@ -84,21 +82,10 @@ def main():
 
     base_image = BASE_IMAGES["default"]
     gd_image = BASE_IMAGES["gd"]
-    reverse = False
-    white = False
 
+    # color以外のtypeを削除
     if type == "color":
         return send_file(createImage(name, id, content, icon, base_image, gd_image), mimetype="image/png")
-    elif type == "reverse":
-        reverse = True
-        return send_file(createImage(name, id, content, icon, base_image, gd_image, reverse=reverse), mimetype="image/png")
-    elif type == "reverseWhite":
-        reverse = True
-        white = True
-        return send_file(createImage(name, id, content, icon, base_image, gd_image, reverse=reverse, white=white), mimetype="image/png")
-    elif type == "white":
-        white = True
-        return send_file(createImage(name, id, content, icon, base_image, gd_image, white=white), mimetype="image/png")
     else:
         return send_file(createImage(name, id, content, icon, base_image, gd_image), mimetype="image/png")
 
