@@ -15,8 +15,7 @@
 - icon: アイコン(URL)
 # 変更内容
 くまのみぼっとで使う用にいろいろ変更してるので..
-- typeパラメータを変更
- - colorとmonoに変更。monoは指定しなくてもいいけど
+- typeパラメータをcolorとmonoに変更。monoは指定しなくてもいいけど
 - BRANDの値とデフォルトの要素をくまのみBOT用に変更
 - nameの内容をusernameからdisplayNameに変更
 - idを廃止して本家と同じuser_nameに変更
