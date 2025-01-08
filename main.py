@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 from pilmoji import Pilmoji
-from flask import Flask, request, send_file
+from flask import Flask, request, send_file, render_template
 import requests
 import io
 import warnings
@@ -87,7 +87,7 @@ def createImage(name, user_name, content, icon, base_image, gd_image=None, type=
     file.seek(0)
     return file
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="docs", template_folder="docs")
 
 @app.route("/", methods=["GET"])
 def main():
@@ -109,5 +109,9 @@ def main():
     except ValueError as e:
         return str(e), 400
 
+@app.route("/apidocs", methods=["GET"])
+def apidocs():
+    return render_template("docs.html")
+    
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000)
