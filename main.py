@@ -65,7 +65,7 @@ def createImage(name, id, content, icon, base_image, gd_image=None, type=None):
         img.paste(icon, (0, 0)) 
 
     else:
-        raise ValueError("指定されたtypeが無効です。「color」か「mono」を使用してください)
+        raise ValueError("指定されたtypeが無効です。「color」か「mono」を使用してください")
 
     if gd_image:
         img.paste(gd_image, (0, 0), gd_image)
