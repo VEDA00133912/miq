@@ -51,14 +51,24 @@ def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, 
 
 def createImage(name, id, content, icon, base_image, gd_image=None, type=None):
     img = base_image.copy()
-    icon_img = Image.open(io.BytesIO(requests.get(icon).content)).resize((720, 720), Image.LANCZOS)
-    
-    # type がmonoの場合はグレースケール変換
+
     if type == "mono":
-        icon_img = icon_img.convert("L")
-    
-    img.paste(ImageEnhance.Brightness(icon_img).enhance(0.7) if gd_image else icon_img, (0, 0))
-    img.paste(gd_image, (0, 0), gd_image)
+        icon = Image.open(io.BytesIO(requests.get(icon).content))
+        icon = icon.resize((720, 720), Image.LANCZOS)
+        icon = icon.convert("L")  # グレースケールに変換
+        icon_filtered = ImageEnhance.Brightness(icon)
+        img.paste(icon_filtered.enhance(0.7), (0, 0)) 
+
+    elif type == "color":
+        icon = Image.open(io.BytesIO(requests.get(icon).content))
+        icon = icon.resize((720, 720), Image.LANCZOS)
+        img.paste(icon, (0, 0)) 
+
+    else:
+        raise ValueError("指定されたtypeが無効です。「color」か「mono」を使用してください)
+
+    if gd_image:
+        img.paste(gd_image, (0, 0), gd_image)
 
     tx = ImageDraw.Draw(img)
     tsize_t = drawText(img, (890, 270), content, size=55, color=(255, 255, 255, 255), split_len=20)
@@ -78,7 +88,7 @@ app = Flask(__name__)
 
 @app.route("/", methods=["GET"])
 def main():
-    type = request.args.get("type", "mono") 
+    type = request.args.get("type")
     name = request.args.get("name", "SAMPLE")
     id = request.args.get("id", "0000000000000000000")
     content = request.args.get("content", "Make it a Quote")
@@ -87,10 +97,14 @@ def main():
     base_image = BASE_IMAGES["default"]
     gd_image = BASE_IMAGES["gd"]
 
-    if type == "color":
-        return send_file(createImage(name, id, content, icon, base_image, gd_image, type="color"), mimetype="image/png")
+    # typeが指定されていない場合、グレースケールを適用
+    if not type:
+        type = "mono"
+
+    if type == "color" or type == "mono":
+        return send_file(createImage(name, id, content, icon, base_image, gd_image, type=type), mimetype="image/png")
     else:
-        return send_file(createImage(name, id, content, icon, base_image, gd_image, type="mono"), mimetype="image/png")
+        return "Invalid type. Please specify either 'mono' or 'color'.", 400
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000)
