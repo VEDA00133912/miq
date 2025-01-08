@@ -50,6 +50,9 @@ def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, 
     return 0, dy, ofs[1] + adj_y + dy
 
 def createImage(name, id, content, icon, base_image, gd_image=None, type=None):
+    if type not in ["color", "mono"]:
+        raise ValueError("指定されたtypeが無効です。「color」か「mono」を使用してください")
+
     img = base_image.copy()
 
     if type == "mono":
@@ -63,9 +66,6 @@ def createImage(name, id, content, icon, base_image, gd_image=None, type=None):
         icon = Image.open(io.BytesIO(requests.get(icon).content))
         icon = icon.resize((720, 720), Image.LANCZOS)
         img.paste(icon, (0, 0)) 
-
-    else:
-        raise ValueError("指定されたtypeが無効です。「color」か「mono」を使用してください")
 
     if gd_image:
         img.paste(gd_image, (0, 0), gd_image)
@@ -97,14 +97,14 @@ def main():
     base_image = BASE_IMAGES["default"]
     gd_image = BASE_IMAGES["gd"]
 
-    # typeが指定されていない場合、グレースケールを適用
+    # typeが指定されていない場合、monoを適用
     if not type:
         type = "mono"
 
-    if type == "color" or type == "mono":
+    try:
         return send_file(createImage(name, id, content, icon, base_image, gd_image, type=type), mimetype="image/png")
-    else:
-        return "Invalid type. Please specify either 'mono' or 'color'.", 400
+    except ValueError as e:
+        return str(e), 400
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000)
