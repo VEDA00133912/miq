@@ -90,7 +90,7 @@ app = Flask(__name__)
 def main():
     type = request.args.get("type")
     name = request.args.get("name", "SAMPLE")
-    user_name = request.args.get("username", BRAND)
+    user_name = request.args.get("user_name", BRAND)
     content = request.args.get("content", "Make it a Quote")
     icon = request.args.get("icon", "https://cdn.discordapp.com/embed/avatars/0.png")
 
