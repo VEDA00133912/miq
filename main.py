@@ -8,14 +8,13 @@ from wrap import fw_wrap
 
 warnings.simplefilter("ignore")
 
-# デフォルトとカラーのみに変更したため削減
 BASE_IMAGES = {
     "default": Image.open("images/base.png"),
     "gd": Image.open("images/base-gd.png")
 }
 
 MPLUS_FONT = ImageFont.truetype("fonts/MPLUSRounded1c-Regular.ttf", size=16)
-BRAND = "!kumanomi!#9363" # くまのみBOT用に変更
+BRAND = "!kumanomi!#9363"  # くまのみBOT用に変更
 
 def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, color=(0, 0, 0, 255), split_len=None, padding=4, disable_dot_wrap=False):
     ImageDraw.Draw(im)
@@ -50,10 +49,15 @@ def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, 
 
     return 0, dy, ofs[1] + adj_y + dy
 
-def createImage(name, id, content, icon, base_image, gd_image=None):
+def createImage(name, id, content, icon, base_image, gd_image=None, type=None):
     img = base_image.copy()
-    icon = Image.open(io.BytesIO(requests.get(icon).content)).resize((720, 720), Image.LANCZOS).convert("L")
-    img.paste(ImageEnhance.Brightness(icon).enhance(0.7) if gd_image else icon, (0, 0))
+    icon_img = Image.open(io.BytesIO(requests.get(icon).content)).resize((720, 720), Image.LANCZOS)
+    
+    # type がmonoの場合はグレースケール変換
+    if type == "mono":
+        icon_img = icon_img.convert("L")
+    
+    img.paste(ImageEnhance.Brightness(icon_img).enhance(0.7) if gd_image else icon_img, (0, 0))
     img.paste(gd_image, (0, 0), gd_image)
 
     tx = ImageDraw.Draw(img)
@@ -83,11 +87,11 @@ def main():
     base_image = BASE_IMAGES["default"]
     gd_image = BASE_IMAGES["gd"]
 
-    # color以外のtypeを削除
-    if type == "color":
-        return send_file(createImage(name, id, content, icon, base_image, gd_image), mimetype="image/png")
+    # typeをcolorとmonoに変更
+    if type in ["color", "mono"]:
+        return send_file(createImage(name, id, content, icon, base_image, gd_image, type=type), mimetype="image/png")
     else:
-        return send_file(createImage(name, id, content, icon, base_image, gd_image), mimetype="image/png")
+        return "Invalid type. Please specify either 'color' or 'mono'.", 400
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000)
