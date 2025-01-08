@@ -50,6 +50,9 @@ def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, 
     return 0, dy, ofs[1] + adj_y + dy
 
 def createImage(name, user_name, content, icon, base_image, gd_image=None, type=None):
+    if type not in ["color", "mono"]:
+        raise ValueError("指定されたtypeが無効です。「color」か「mono」を使用してください")
+        
     img = base_image.copy()
 
     if type == "mono":
@@ -92,19 +95,19 @@ def main():
     name = request.args.get("name", "SAMPLE")
     user_name = request.args.get("user_name", BRAND)
     content = request.args.get("content", "Make it a Quote")
-    icon = request.args.get("icon", "https://cdn.discordapp.com/embed/avatars/0.png")
+    icon = request.args.get("icon", "https://ul.h3z.jp/0KwXFOaf.png")
 
     base_image = BASE_IMAGES["default"]
     gd_image = BASE_IMAGES["gd"]
 
-    # typeが指定されていない場合、グレースケールを適用
+    # 指定がない場合はmonoを適用
     if not type:
         type = "mono"
 
-    if type == "color" or type == "mono":
+    try:
         return send_file(createImage(name, user_name, content, icon, base_image, gd_image, type=type), mimetype="image/png")
-    else:
-        return "指定されたtypeが無効です。「color」か「mono」を使用してください'.", 400
+    except ValueError as e:
+        return str(e), 400
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000)
