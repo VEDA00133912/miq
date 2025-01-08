@@ -8,7 +8,8 @@
 ## パラメーター
 - type: タイプ
     - `color` カラーアイコン
+    - `mono` モノクロ(デフォルトでこれが適用されます)
 - name: 名前
-- id: ID
+- user_name: ユーザー名
 - content: 内容
 - icon: アイコン(URL)
