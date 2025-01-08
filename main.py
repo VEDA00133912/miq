@@ -49,10 +49,7 @@ def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, 
 
     return 0, dy, ofs[1] + adj_y + dy
 
-def createImage(name, id, content, icon, base_image, gd_image=None, type=None):
-    if type not in ["color", "mono"]:
-        raise ValueError("指定されたtypeが無効です。「color」か「mono」を使用してください")
-
+def createImage(name, username, content, icon, base_image, gd_image=None, type=None):
     img = base_image.copy()
 
     if type == "mono":
@@ -67,15 +64,18 @@ def createImage(name, id, content, icon, base_image, gd_image=None, type=None):
         icon = icon.resize((720, 720), Image.LANCZOS)
         img.paste(icon, (0, 0)) 
 
+    else:
+        raise ValueError("指定されたtypeが無効です。「color」か「mono」を使用してください")
+
     if gd_image:
         img.paste(gd_image, (0, 0), gd_image)
 
     tx = ImageDraw.Draw(img)
     tsize_t = drawText(img, (890, 270), content, size=55, color=(255, 255, 255, 255), split_len=20)
     name_y = tsize_t[2] + 40
-    tsize_name = drawText(img, (890, name_y), f"@{name}", size=28, color=(255, 255, 255, 255), split_len=25, disable_dot_wrap=True)
-    id_y = name_y + tsize_name[1] + 4
-    drawText(img, (890, id_y), id, size=18, color=(180, 180, 180, 255), split_len=45, disable_dot_wrap=True)
+    tsize_name = drawText(img, (890, name_y), name, size=28, color=(255, 255, 255, 255), split_len=25, disable_dot_wrap=True)
+    username_y = name_y + tsize_name[1] + 4
+    drawText(img, (890, username_y), f"@{username}", size=18, color=(180, 180, 180, 255), split_len=45, disable_dot_wrap=True)
 
     tx.text((1122, 694), BRAND, font=MPLUS_FONT, fill=(120, 120, 120, 255))
 
@@ -89,10 +89,10 @@ app = Flask(__name__)
 @app.route("/", methods=["GET"])
 def main():
     type = request.args.get("type")
-    name = request.args.get("name", "SAMPLE")
-    id = request.args.get("id", "0000000000000000000")
+    name = request.args.get("name", "くまのみBOT")
+    username = request.args.get("username", "!kumanomi!#9363")
     content = request.args.get("content", "Make it a Quote")
-    icon = request.args.get("icon", "https://cdn.discordapp.com/embed/avatars/0.png")
+    icon = request.args.get("icon", "https://ul.h3z.jp/0KwXFOaf.png")
 
     base_image = BASE_IMAGES["default"]
     gd_image = BASE_IMAGES["gd"]
