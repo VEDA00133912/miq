@@ -78,7 +78,7 @@ app = Flask(__name__)
 
 @app.route("/", methods=["GET"])
 def main():
-    type = request.args.get("type")
+    type = request.args.get("type", "mono") 
     name = request.args.get("name", "SAMPLE")
     id = request.args.get("id", "0000000000000000000")
     content = request.args.get("content", "Make it a Quote")
@@ -87,11 +87,10 @@ def main():
     base_image = BASE_IMAGES["default"]
     gd_image = BASE_IMAGES["gd"]
 
-    # typeをcolorとmonoに変更
-    if type in ["color", "mono"]:
-        return send_file(createImage(name, id, content, icon, base_image, gd_image, type=type), mimetype="image/png")
+    if type == "color":
+        return send_file(createImage(name, id, content, icon, base_image, gd_image, type="color"), mimetype="image/png")
     else:
-        return "Invalid type. Please specify either 'color' or 'mono'.", 400
+        return send_file(createImage(name, id, content, icon, base_image, gd_image, type="mono"), mimetype="image/png")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000)
