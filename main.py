@@ -49,7 +49,7 @@ def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, 
 
     return 0, dy, ofs[1] + adj_y + dy
 
-def createImage(name, username, content, icon, base_image, gd_image=None, type=None):
+def createImage(name, user_name, content, icon, base_image, gd_image=None, type=None):
     img = base_image.copy()
 
     if type == "mono":
@@ -74,8 +74,8 @@ def createImage(name, username, content, icon, base_image, gd_image=None, type=N
     tsize_t = drawText(img, (890, 270), content, size=55, color=(255, 255, 255, 255), split_len=20)
     name_y = tsize_t[2] + 40
     tsize_name = drawText(img, (890, name_y), name, size=28, color=(255, 255, 255, 255), split_len=25, disable_dot_wrap=True)
-    username_y = name_y + tsize_name[1] + 4
-    drawText(img, (890, username_y), f"@{username}", size=18, color=(180, 180, 180, 255), split_len=45, disable_dot_wrap=True)
+    user_name_y = name_y + tsize_name[1] + 4
+    drawText(img, (890, user_name_y), f"@{user_name}", size=18, color=(180, 180, 180, 255), split_len=45, disable_dot_wrap=True)
 
     tx.text((1122, 694), BRAND, font=MPLUS_FONT, fill=(120, 120, 120, 255))
 
@@ -89,22 +89,22 @@ app = Flask(__name__)
 @app.route("/", methods=["GET"])
 def main():
     type = request.args.get("type")
-    name = request.args.get("name", "くまのみBOT")
-    username = request.args.get("username", "!kumanomi!#9363")
+    name = request.args.get("name", "SAMPLE")
+    user_name = request.args.get("username", BRAND)
     content = request.args.get("content", "Make it a Quote")
-    icon = request.args.get("icon", "https://ul.h3z.jp/0KwXFOaf.png")
+    icon = request.args.get("icon", "https://cdn.discordapp.com/embed/avatars/0.png")
 
     base_image = BASE_IMAGES["default"]
     gd_image = BASE_IMAGES["gd"]
 
-    # typeが指定されていない場合、monoを適用
+    # typeが指定されていない場合、グレースケールを適用
     if not type:
         type = "mono"
 
-    try:
-        return send_file(createImage(name, id, content, icon, base_image, gd_image, type=type), mimetype="image/png")
-    except ValueError as e:
-        return str(e), 400
+    if type == "color" or type == "mono":
+        return send_file(createImage(name, user_name, content, icon, base_image, gd_image, type=type), mimetype="image/png")
+    else:
+        return "指定されたtypeが無効です。「color」か「mono」を使用してください'.", 400
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000)
