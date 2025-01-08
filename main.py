@@ -54,14 +54,14 @@ def createImage(name, id, content, icon, base_image, gd_image=None, type=None):
 
     if type == "mono":
         icon = Image.open(io.BytesIO(requests.get(icon).content))
-        icon = icon.resize((720, 720), Image.LANCZOS)
+        icon = icon.resize((1280, 1280), Image.LANCZOS)
         icon = icon.convert("L")  # グレースケールに変換
         icon_filtered = ImageEnhance.Brightness(icon)
         img.paste(icon_filtered.enhance(0.7), (0, 0)) 
 
     elif type == "color":
         icon = Image.open(io.BytesIO(requests.get(icon).content))
-        icon = icon.resize((720, 720), Image.LANCZOS)
+        icon = icon.resize((1280, 1280), Image.LANCZOS)
         img.paste(icon, (0, 0)) 
 
     else:
