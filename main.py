@@ -3,6 +3,7 @@ from pilmoji import Pilmoji
 from flask import Flask, request, send_file
 import requests
 import io
+import warnings
 from wrap import fw_wrap
 
 warnings.simplefilter("ignore")
