@@ -16,13 +16,14 @@ BASE_IMAGES = {
 MPLUS_FONT = ImageFont.truetype("fonts/MPLUSRounded1c-Regular.ttf", size=16)
 BRAND = "!kumanomi!#9363"  # くまのみBOT用に変更
 
-def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, color=(0, 0, 0, 255), 
+def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, color=(0, 0, 0, 255),
              split_len=None, padding=4, disable_dot_wrap=False, max_height=None):
 
-    fontObj = ImageFont.truetype(font, size=size)
     max_font_size = size
     min_font_size = 8  # 最小フォントサイズ
     lines = []
+    
+    fontObj = ImageFont.truetype(font, size=size)
     
     pure_lines = []
     l = ""
@@ -35,8 +36,12 @@ def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, 
     if l:
         pure_lines.append(l)
 
+    base_fontObj = ImageFont.truetype(font, size=16)
+    base_max_width = max([base_fontObj.getsize(line)[0] for line in pure_lines])  
+
+    # 改行処理
     for line in pure_lines:
-        lines.extend(fw_wrap(line, width=split_len))
+        lines.extend(fw_wrap(line, width=base_max_width))  # 基準の横幅で改行
 
     dy = 0
     adjusted_y = ofs[1]
@@ -48,15 +53,12 @@ def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, 
         dy = 0
         overflow = False
 
-        max_line_width = max([fontObj.getsize(line)[0] for line in lines])
-        
         for line in lines:
             tsize = fontObj.getsize(line)
-            x = int(ofs[0] - (max_line_width / 2))  
             if adjusted_y + dy + tsize[1] > max_y:
                 overflow = True
                 break
-            draw_lines.append((x, adjusted_y + dy, line))
+            draw_lines.append((ofs[0], adjusted_y + dy, line)) 
             dy += tsize[1] + padding
 
         if not overflow:
@@ -78,7 +80,7 @@ def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, 
             p.text((dl[0], dl[1]), dl[2], font=fontObj, fill=color)
 
     return 0, dy, adjusted_y + dy
-
+                 
 def createImage(name, user_name, content, icon, base_image, gd_image=None, type=None):
     if type not in ["color", "mono"]:
         raise ValueError("指定されたtypeが無効です。「color」か「mono」を使用してください")
