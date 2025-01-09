@@ -16,14 +16,9 @@ BASE_IMAGES = {
 MPLUS_FONT = ImageFont.truetype("fonts/MPLUSRounded1c-Regular.ttf", size=16)
 BRAND = "!kumanomi!#9363"  # くまのみBOT用に変更
 
-def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, color=(0, 0, 0, 255),
-             split_len=None, padding=4, disable_dot_wrap=False, max_height=None):
-    max_font_size = size
-    min_font_size = 8
-    lines = []
-    
+def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, color=(0, 0, 0, 255), split_len=None, padding=4, disable_dot_wrap=False):
+    ImageDraw.Draw(im)
     fontObj = ImageFont.truetype(font, size=size)
-    
     pure_lines = []
     l = ""
     for char in string:
@@ -35,51 +30,25 @@ def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, 
     if l:
         pure_lines.append(l)
 
-    base_fontObj = ImageFont.truetype(font, size=16)
-    base_max_width = max([base_fontObj.getsize(line)[0] for line in pure_lines])
-
+    lines = []
     for line in pure_lines:
-        lines.extend(fw_wrap(line, width=base_max_width))
+        lines.extend(fw_wrap(line, width=split_len))
 
     dy = 0
-    adjusted_y = ofs[1]
-    max_y = ofs[1] + max_height if max_height else float("inf")
-    
-    while size >= min_font_size:
-        fontObj = ImageFont.truetype(font, size=size)
-        draw_lines = []
-        dy = 0
-        overflow = False
+    draw_lines = []
+    for line in lines:
+        tsize = fontObj.getsize(line)
+        x = int(ofs[0] - (tsize[0] / 2))
+        draw_lines.append((x, ofs[1] + dy, line))
+        dy += tsize[1] + padding
 
-        for line in lines:
-            tsize = fontObj.getsize(line)
-            if adjusted_y + dy + tsize[1] > max_y:
-                overflow = True
-                break
-            x_offset = int(ofs[0] - (tsize[0] / 2))
-            draw_lines.append((x_offset, adjusted_y + dy, line))
-            dy += tsize[1] + padding
-
-        if not overflow:
-            break
-        size -= 1
-
-    if overflow:
-        truncated_text = ""
-        for line in lines:
-            test_line = truncated_text + line + "..."
-            tsize = fontObj.getsize(test_line)
-            if adjusted_y + dy + tsize[1] <= max_y:
-                truncated_text = test_line
-                break
-        lines = [truncated_text]
-
+    adj_y = -30 * (len(draw_lines)-1)
     for dl in draw_lines:
         with Pilmoji(im) as p:
-            p.text((dl[0], dl[1]), dl[2], font=fontObj, fill=color)
+            p.text((dl[0], adj_y + dl[1]), dl[2], font=fontObj, fill=color)
 
-    return 0, dy, adjusted_y + dy
-                 
+    return 0, dy, ofs[1] + adj_y + dy
+
 def createImage(name, user_name, content, icon, base_image, gd_image=None, type=None):
     if type not in ["color", "mono"]:
         raise ValueError("指定されたtypeが無効です。「color」か「mono」を使用してください")
@@ -105,8 +74,7 @@ def createImage(name, user_name, content, icon, base_image, gd_image=None, type=
         img.paste(gd_image, (0, 0), gd_image)
 
     tx = ImageDraw.Draw(img)
-    max_content_height = 200  # name より少し上の高さ
-    tsize_t = drawText(img, (890, 270), content, size=55, color=(255, 255, 255, 255), split_len=20, max_height=max_content_height)
+    tsize_t = drawText(img, (890, 270), content, size=55, color=(255, 255, 255, 255), split_len=20)
     name_y = tsize_t[2] + 40
     tsize_name = drawText(img, (890, name_y), name, size=28, color=(255, 255, 255, 255), split_len=25, disable_dot_wrap=True)
     user_name_y = name_y + tsize_name[1] + 4
