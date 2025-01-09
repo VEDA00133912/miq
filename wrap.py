@@ -1,5 +1,6 @@
 import textwrap
 import unicodedata
+from itertools import groupby
 from PIL import ImageFont
 from pilmoji import Pilmoji
 
