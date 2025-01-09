@@ -16,9 +16,17 @@ BASE_IMAGES = {
 MPLUS_FONT = ImageFont.truetype("fonts/MPLUSRounded1c-Regular.ttf", size=16)
 BRAND = "!kumanomi!#9363"  # くまのみBOT用に変更
 
-def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, color=(0, 0, 0, 255), split_len=None, padding=4, disable_dot_wrap=False):
-    ImageDraw.Draw(im)
+def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, color=(0, 0, 0, 255), 
+             split_len=None, padding=4, disable_dot_wrap=False, max_height=None):
+    """
+    画像にテキストを描画する。指定領域を超えないよう調整し、収まらない場合はフォントサイズを縮小する。
+    """
     fontObj = ImageFont.truetype(font, size=size)
+    max_font_size = size
+    min_font_size = 8  # 最小フォントサイズ
+    lines = []
+    
+    # 句読点や改行で分割
     pure_lines = []
     l = ""
     for char in string:
@@ -30,24 +38,53 @@ def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, 
     if l:
         pure_lines.append(l)
 
-    lines = []
+    # 改行処理
     for line in pure_lines:
         lines.extend(fw_wrap(line, width=split_len))
 
+    # 描画可能なエリアの計算
     dy = 0
-    draw_lines = []
-    for line in lines:
-        tsize = fontObj.getsize(line)
-        x = int(ofs[0] - (tsize[0] / 2))
-        draw_lines.append((x, ofs[1] + dy, line))
-        dy += tsize[1] + padding
+    adjusted_y = ofs[1]
+    max_y = ofs[1] + max_height if max_height else float("inf")
+    
+    # 描画内容がエリアを超えないよう調整
+    while size >= min_font_size:
+        fontObj = ImageFont.truetype(font, size=size)
+        draw_lines = []
+        dy = 0
+        overflow = False
+        
+        # 各行の位置計算
+        for line in lines:
+            tsize = fontObj.getsize(line)
+            x = int(ofs[0] - (tsize[0] / 2))  # 中央揃え
+            if adjusted_y + dy + tsize[1] > max_y:
+                overflow = True
+                break
+            draw_lines.append((x, adjusted_y + dy, line))
+            dy += tsize[1] + padding
 
-    adj_y = -30 * (len(draw_lines)-1)
+        if not overflow:
+            break
+        size -= 1  # フォントサイズを縮小
+
+    # フォントサイズを縮小しても収まらない場合、末尾を切り取って "..." を追加
+    if overflow:
+        truncated_text = ""
+        for line in lines:
+            test_line = truncated_text + line + "..."
+            tsize = fontObj.getsize(test_line)
+            if adjusted_y + dy + tsize[1] <= max_y:
+                truncated_text = test_line
+                break
+        lines = [truncated_text]
+
+    # テキストを描画
     for dl in draw_lines:
         with Pilmoji(im) as p:
-            p.text((dl[0], adj_y + dl[1]), dl[2], font=fontObj, fill=color)
+            p.text((dl[0], dl[1]), dl[2], font=fontObj, fill=color)
 
-    return 0, dy, ofs[1] + adj_y + dy
+    return 0, dy, adjusted_y + dy
 
 def createImage(name, user_name, content, icon, base_image, gd_image=None, type=None):
     if type not in ["color", "mono"]:
@@ -74,7 +111,8 @@ def createImage(name, user_name, content, icon, base_image, gd_image=None, type=
         img.paste(gd_image, (0, 0), gd_image)
 
     tx = ImageDraw.Draw(img)
-    tsize_t = drawText(img, (890, 270), content, size=55, color=(255, 255, 255, 255), split_len=20)
+    max_content_height = 200  # name より少し上の高さ
+    tsize_t = drawText(img, (890, 270), content, size=55, color=(255, 255, 255, 255), split_len=20, max_height=max_content_height)
     name_y = tsize_t[2] + 40
     tsize_name = drawText(img, (890, name_y), name, size=28, color=(255, 255, 255, 255), split_len=25, disable_dot_wrap=True)
     user_name_y = name_y + tsize_name[1] + 4
