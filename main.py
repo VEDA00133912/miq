@@ -18,9 +18,8 @@ BRAND = "!kumanomi!#9363"  # くまのみBOT用に変更
 
 def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, color=(0, 0, 0, 255),
              split_len=None, padding=4, disable_dot_wrap=False, max_height=None):
-
     max_font_size = size
-    min_font_size = 8  # 最小フォントサイズ
+    min_font_size = 8
     lines = []
     
     fontObj = ImageFont.truetype(font, size=size)
@@ -37,11 +36,10 @@ def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, 
         pure_lines.append(l)
 
     base_fontObj = ImageFont.truetype(font, size=16)
-    base_max_width = max([base_fontObj.getsize(line)[0] for line in pure_lines])  
+    base_max_width = max([base_fontObj.getsize(line)[0] for line in pure_lines])
 
-    # 改行処理
     for line in pure_lines:
-        lines.extend(fw_wrap(line, width=base_max_width))  # 基準の横幅で改行
+        lines.extend(fw_wrap(line, width=base_max_width))
 
     dy = 0
     adjusted_y = ofs[1]
@@ -58,12 +56,13 @@ def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, 
             if adjusted_y + dy + tsize[1] > max_y:
                 overflow = True
                 break
-            draw_lines.append((ofs[0], adjusted_y + dy, line)) 
+            x_offset = int(ofs[0] - (tsize[0] / 2))
+            draw_lines.append((x_offset, adjusted_y + dy, line))
             dy += tsize[1] + padding
 
         if not overflow:
             break
-        size -= 1  
+        size -= 1
 
     if overflow:
         truncated_text = ""
