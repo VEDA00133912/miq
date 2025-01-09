@@ -4,7 +4,7 @@
 - `python main.py`で起動
 - `http://localhost:3000/`でアクセスする
 ## API docs  
-https://miq-dtsg.onrender.com/apidocs
+https://miq-001339.onrender.com/apidocs
 ## 変更内容
 くまのみぼっとで使う用にいろいろ変更してるので..
 - typeパラメータをcolorとmonoに変更。monoは指定しなくてもいいけど
