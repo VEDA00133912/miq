@@ -18,15 +18,12 @@ BRAND = "!kumanomi!#9363"  # くまのみBOT用に変更
 
 def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, color=(0, 0, 0, 255), 
              split_len=None, padding=4, disable_dot_wrap=False, max_height=None):
-    """
-    画像にテキストを描画する。指定領域を超えないよう調整し、収まらない場合はフォントサイズを縮小する。
-    """
+
     fontObj = ImageFont.truetype(font, size=size)
     max_font_size = size
     min_font_size = 8  # 最小フォントサイズ
     lines = []
     
-    # 句読点や改行で分割
     pure_lines = []
     l = ""
     for char in string:
@@ -38,26 +35,24 @@ def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, 
     if l:
         pure_lines.append(l)
 
-    # 改行処理
     for line in pure_lines:
         lines.extend(fw_wrap(line, width=split_len))
 
-    # 描画可能なエリアの計算
     dy = 0
     adjusted_y = ofs[1]
     max_y = ofs[1] + max_height if max_height else float("inf")
     
-    # 描画内容がエリアを超えないよう調整
     while size >= min_font_size:
         fontObj = ImageFont.truetype(font, size=size)
         draw_lines = []
         dy = 0
         overflow = False
+
+        max_line_width = max([fontObj.getsize(line)[0] for line in lines])
         
-        # 各行の位置計算
         for line in lines:
             tsize = fontObj.getsize(line)
-            x = int(ofs[0] - (tsize[0] / 2))  # 中央揃え
+            x = int(ofs[0] - (max_line_width / 2))  
             if adjusted_y + dy + tsize[1] > max_y:
                 overflow = True
                 break
@@ -66,9 +61,8 @@ def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, 
 
         if not overflow:
             break
-        size -= 1  # フォントサイズを縮小
+        size -= 1  
 
-    # フォントサイズを縮小しても収まらない場合、末尾を切り取って "..." を追加
     if overflow:
         truncated_text = ""
         for line in lines:
@@ -79,7 +73,6 @@ def drawText(im, ofs, string, font="fonts/MPLUSRounded1c-Regular.ttf", size=16, 
                 break
         lines = [truncated_text]
 
-    # テキストを描画
     for dl in draw_lines:
         with Pilmoji(im) as p:
             p.text((dl[0], dl[1]), dl[2], font=fontObj, fill=color)
